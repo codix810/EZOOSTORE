@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  animation: gradient-x 6s ease infinite;
+}
+
+@keyframes move-1 {
+  0%, 100% { transform: translate(-50px, -50px); }
+  50% { transform: translate(50px, 50px); }
+}
+@keyframes move-2 {
+  0%, 100% { transform: translate(50px, 50px); }
+  50% { transform: translate(-50px, -50px); }
+}
+.animate-move-1 { animation: move-1 20s ease-in-out infinite alternate; }
+.animate-move-2 { animation: move-2 25s ease-in-out infinite alternate; }
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 8s linear infinite; }

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/compnents/Navbar.jsx", "src/app/page.jsx", "src/app/compnents/GalleryPage.tsx", "src/app/compnents/Footer.jsx", "src/app/api/orders/[id]/route.js", "src/app/api/signup/route.ts", "src/app/api/orders/route.ts", "src/app/api/orders/user/[id]/route.فs", "lib/db.ts", "src/app/api/orders/[id]/route.فs", "src/app/api/attributes/[id]/route.js", "src/app/api/products/[id]/route.js", "src/app/profile/components/OrdersPage/page.tsx"],
+  "exclude": ["node_modules"]
+}
