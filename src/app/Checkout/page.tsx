@@ -176,6 +176,74 @@ export default function CheckoutPage() {
   const shippingPrice = coupon?.freeShipping || totalQty >= 4 ? 0 : SHIPPING_COST;
   const grandTotal = discountedSubtotal + shippingPrice;
 
+  // ================== Submit Order ==================
+  const handleSubmit = async () => {
+    if (
+      !mainForm?.name ||
+      !mainForm.email ||
+      !mainForm.phone ||
+      !mainForm.governorate ||
+      !mainForm.address
+    ) {
+      setMessage({ global: { type: "error", text: t.completeAll } });
+      return;
+    }
+
+    try {
+      const orderPayload = {
+        userId: user?._id,
+        customer: {
+          name: mainForm.name,
+          email: mainForm.email,
+          phone: mainForm.phone,
+          governorate: mainForm.governorate,
+          address: mainForm.address,
+        },
+        items: cart.map((item) => {
+          const f = forms[item._id];
+          return {
+            productId: item._id,
+            name: item.name,
+            imageUrl: item.imageUrl,
+            size: f.selectedSize,
+            color: f.selectedColor,
+            quantity: f.quantity,
+            price: item.price,
+            discountedPrice: priceWithDiscount(item),
+          };
+        }),
+        price: grandTotal,
+        status: lang === "ar" ? "معلق" : "Pending",
+      };
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setOrderPlaced(true);
+        localStorage.removeItem("cart");
+        setMessage({ global: { type: "success", text: "✅ تم إرسال الطلب بنجاح" } });
+      } else {
+        setMessage({ global: { type: "error", text: "❌ فشل في إرسال الطلب" } });
+      }
+
+    } catch (err) {
+      console.error("❌ Order submit error:", err);
+      setMessage({ global: { type: "error", text: "❌ مشكلة في الاتصال بالسيرفر" } });
+    }
+    
+  };
+
+  const handlePrint = () => {
+  window.print();
+};
+
+
   // ================== UI ==================
   if (cart.length === 0 && !orderPlaced) {
     return (
@@ -225,64 +293,59 @@ export default function CheckoutPage() {
                   </p>
 
                   {/* اختيارات */}
-          <div className="flex flex-col sm:flex-row gap-2">
-  <select
-    className="border rounded px-2 py-1 text-cyan-600 flex-1"
-    value={f.selectedSize}
-    onChange={(e) =>
-      setForms((prev) => ({
-        ...prev,
-        [item._id]: { ...f, selectedSize: e.target.value },
-      }))
-    }
-  >
-    <option value="">—Size—</option>
-    {sizes.map((s) => (
-      <option key={s._id} value={s.value}>
-        {s.value}
-      </option>
-    ))}
-  </select>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <select
+                      className="border rounded px-2 py-1 text-cyan-600 flex-1"
+                      value={f.selectedSize}
+                      onChange={(e) =>
+                        setForms((prev) => ({
+                          ...prev,
+                          [item._id]: { ...f, selectedSize: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="">—Size—</option>
+                      {sizes.map((s) => (
+                        <option key={s._id} value={s.value}>
+                          {s.value}
+                        </option>
+                      ))}
+                    </select>
 
-  <select
-    className="border rounded px-2 py-1 text-cyan-600 flex-1"
-    value={f.selectedColor}
-    onChange={(e) =>
-      setForms((prev) => ({
-        ...prev,
-        [item._id]: { ...f, selectedColor: e.target.value },
-      }))
-    }
-  >
-    <option value="">—Color—</option>
-    {colors.map((c) => (
-      <option
-        key={c._id}
-        value={c.value}
-        className={`border rounded px-2 py-1 w-20 bg-gradient-to-br from-slate-900 dark:via-slate-800 dark:to-slate-950 text-${c.value}`}
-      >
-        {c.value}
-      </option>
-    ))}
-  </select>
+                    <select
+                      className="border rounded px-2 py-1 text-cyan-600 flex-1"
+                      value={f.selectedColor}
+                      onChange={(e) =>
+                        setForms((prev) => ({
+                          ...prev,
+                          [item._id]: { ...f, selectedColor: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="">—Color—</option>
+                      {colors.map((c) => (
+                        <option key={c._id} value={c.value}>
+                          {c.value}
+                        </option>
+                      ))}
+                    </select>
 
-  <input
-    type="number"
-    min={1}
-    className="border rounded px-2 py-1 w-15 text-cyan-600 flex-1"
-    value={f.quantity}
-    onChange={(e) =>
-      setForms((prev) => ({
-        ...prev,
-        [item._id]: {
-          ...f,
-          quantity: Math.max(1, Number(e.target.value) || 1),
-        },
-      }))
-    }
-  />
-</div>
-
+                    <input
+                      type="number"
+                      min={1}
+                      className="border rounded px-2 py-1 w-15 text-cyan-600 flex-1"
+                      value={f.quantity}
+                      onChange={(e) =>
+                        setForms((prev) => ({
+                          ...prev,
+                          [item._id]: {
+                            ...f,
+                            quantity: Math.max(1, Number(e.target.value) || 1),
+                          },
+                        }))
+                      }
+                    />
+                  </div>
                 </div>
               </motion.div>
             );
@@ -400,19 +463,35 @@ export default function CheckoutPage() {
 
           {!orderPlaced ? (
             <button
+              onClick={handleSubmit}
               className={`w-full py-3 rounded-xl text-white font-bold shadow-lg hover:scale-105 transition flex items-center justify-center gap-2 ${gradientClass}`}
             >
               <Send className="w-5 h-5" /> {t.confirm}
             </button>
           ) : (
-            <div className="flex flex-col gap-2">
-              <button className="w-full bg-blue-500 py-3 rounded-xl text-white font-bold shadow-lg hover:bg-blue-600 transition flex items-center justify-center gap-2">
-                <Printer className="w-5 h-5" /> {t.printInvoice}
-              </button>
-              <button className="w-full bg-green-600 py-3 rounded-xl text-white font-bold shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                <Truck className="w-5 h-5" /> {t.trackOrder}
-              </button>
-            </div>
+          <div className="flex flex-col gap-2">
+    <button
+      onClick={handlePrint}
+      className="w-full bg-blue-500 py-3 rounded-xl text-white font-bold shadow-lg hover:bg-blue-600 transition flex items-center justify-center gap-2"
+    >
+      <Printer className="w-5 h-5" /> {t.printInvoice}
+    </button>
+    <button
+onClick={() => router.push('/profile/components/OrdersPage')}      className="w-full bg-green-600 py-3 rounded-xl text-white font-bold shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+    >
+      <Truck className="w-5 h-5" /> {t.trackOrder}
+    </button>
+  </div>
+          )}
+
+          {message.global && (
+            <p
+              className={`text-center font-bold mt-3 ${
+                message.global.type === "error" ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {message.global.text}
+            </p>
           )}
         </motion.div>
       </div>
