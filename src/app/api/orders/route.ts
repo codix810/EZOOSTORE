@@ -39,11 +39,23 @@ export async function POST(req: Request) {
       ];
     }
 
+interface OrderItem {
+  productId: string | null;
+  name: string;
+  size: string;
+  color: string;
+  quantity: number;
+  price: number;
+  discountedPrice?: number;
+  imageUrl: string;
+}
+
 const orderTotal = typeof total === "number"
   ? total
-  : orderItems.reduce((sum: number, i: any) => {
-      return sum + (i.discountedPrice || i.price) * i.quantity;
+  : orderItems.reduce((sum: number, i: OrderItem) => {
+      return sum + (i.discountedPrice ?? i.price) * i.quantity;
     }, 0) + shipping;
+
 
     const order = await TshirtOrder.create({
       items: orderItems,
