@@ -368,7 +368,7 @@ export default function CheckoutPage() {
                   key={field}
                   placeholder={t[field]}
                   className="w-full border rounded px-3 py-2  text-cyan-600"
-                  value={(mainForm as any)[field] || ""}
+                  value={mainForm?.[field] || ""}
                   onChange={(e) =>
                     setForms((prev) => {
                       const next = { ...prev };
