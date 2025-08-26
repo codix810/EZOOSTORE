@@ -33,6 +33,16 @@ type OrderType = {
   customer: CustomerType;
   createdAt?: string;
 };
+interface OrderItem {
+  _id: string;
+  name: string;
+  size: string;
+  color: string;
+  quantity: number;
+  price: number;
+  discountedPrice?: number;
+  imageUrl?: string;
+}
 
 const dict = {
   en: {
@@ -99,19 +109,21 @@ export default function OrdersPage() {
         const data = await res.json();
         if (!data.success) throw new Error("فشل جلب الطلبات");
 
-        const ordersWithIds: OrderType[] = (data.orders || []).map((order: any) => ({
-          _id: order._id,
-          total: order.total || 0,
-          items: (order.items || []).map((item: any) => ({
-            _id: item._id,
-            name: item.name,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            price: item.price,
-            discountedPrice: item.discountedPrice,
-            imageUrl: item.imageUrl,
-          })),
+const ordersWithIds: OrderType[] = (data.orders || []).map((order: OrderType) => ({
+  _id: order._id,
+  total: order.total || 0,
+  items: (order.items || []).map((item: OrderItem) => ({
+    _id: item._id,
+    name: item.name,
+    size: item.size,
+    color: item.color,
+    quantity: item.quantity,
+    price: item.price,
+    discountedPrice: item.discountedPrice,
+    imageUrl: item.imageUrl,
+  })),
+
+
           customer: {
             name: order.customer.name,
             email: order.customer.email,
